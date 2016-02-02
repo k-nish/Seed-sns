@@ -6,12 +6,13 @@ if (!isset($_SESSION['join'])) {
   header('Location: index.php');
   exit();
 }
-if (!empty($_POST)) {
-  $sql = sprintf('INSERT INTO members SET name="%s", email="%s",password="%s",picture="%s",created="%s"',
-    mysqli_real_escape_string($db,$_SESSION['join']['name']),
+if (isset($_SESSION['join'])&&!empty($_SESSION['join'])) {
+  echo "ok";
+  $sql = sprintf('INSERT INTO `members` SET `nick_name`="%s", `email`="%s",`password`="%s",`picture_path`="%s",`created`="%s"',
+    mysqli_real_escape_string($db,$_SESSION['join']['nick_name']),
     mysqli_real_escape_string($db,$_SESSION['join']['email']),
-    mysqli_real_escape_string($db,shal($_SESSION['join']['password'])),
-    mysqli_real_escape_string($db,$_SESSION['join']['image']),
+    mysqli_real_escape_string($db,sha1($_SESSION['join']['password'])),
+    mysqli_real_escape_string($db,$_SESSION['join']['picture_path']),
     date('Y-m-d H:i:s')
     );
     mysqli_query($db,$sql) or die(mysqli_error($db));
@@ -75,7 +76,7 @@ if (!empty($_POST)) {
   <div class="container">
     <div class="row">
       <div class="col-md-4 col-md-offset-4 content-margin-top">
-        <form method="post" action="" class="form-horizontal" role="form">
+        <form method="post" action="check.php" class="form-horizontal" role="form">
           <input type="hidden" name="action" value="submit">
           <div class="well">ご登録内容をご確認ください。</div>
             <table class="table table-striped table-condensed">

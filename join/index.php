@@ -17,7 +17,7 @@
      }
 
 
-     $filename = $_FILES['image']['name'];
+     $filename = $_FILES['picture_path']['name'];
      if (!empty($filename)) {
        $ext = substr($filename, -3);
        if ($ext != 'jpg' && $ext != 'gif') {
@@ -27,9 +27,9 @@
      
      if (empty($error)) {
          $image = date('YmdHis').$filename;
-         move_uploaded_file($_FILES['image']['tmp_name'], '../member_picture/'.$image);
+         move_uploaded_file($_FILES['picture_path']['tmp_name'], '../member_picture/'.$image);
          $_SESSION['join'] = $_POST;
-         $_SESSION['join']['image'] = $image;
+         $_SESSION['join']['picture_path'] = $image;
          var_dump($_SESSION);
          header('Location: check.php');
          exit();
@@ -150,8 +150,8 @@ if (isset($_REQUEST['action'])&&$_REQUEST['action']=='rewrite') {
           <div class="form-group">
             <label class="col-sm-4 control-label">プロフィール写真</label>
             <div class="col-sm-8">
-              <input type="file" name="image" class="form-control">
-              <?php if (isset($_FILES['image']['name'])&&!empty($_FILES['image']['name'])) {
+              <input type="file" name="picture_path" class="form-control">
+              <?php if (isset($_FILES['picture_path']['name'])&&!empty($_FILES['picture_path']['name'])) {
                   if (isset($error['image'])&&$error['image'] == 'type') { ?>
                   <p class="error">*写真などは「.gif」または「.jpg」の画像を指定してください。</p>
               <?php }} ?>
