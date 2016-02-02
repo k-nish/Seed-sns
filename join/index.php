@@ -1,25 +1,16 @@
 <?php 
- // session_start();
+ session_start();
  $error = array();
- // $error[] = null;
 
  if (isset($_POST)&&!empty($_POST)) {
      if ($_POST['nick_name'] == '') {
          $error['nick_name'] = 'blank';
      }
-     // elseif ($_POST['nick_name'] !='') {
-     //     $error['nick_name'] ='';
-     // }
      if ($_POST['email'] == '') {
          $error['email'] = 'blank';
      }
-     // elseif ($_POST['email'] != '') {
-     //     $error['email'] = '';
-     // }
      if (strlen($_POST['password']) <3) {
          $error['password'] = 'length';
-     // }else {
-     //     $error['password'] = '';
      }
      if ($_POST['password'] == '') {
          $error['password'] = 'blank';
@@ -31,22 +22,24 @@
        $ext = substr($filename, -3);
        if ($ext != 'jpg' && $ext != 'gif') {
          $error ['image']  = 'type';
-       // }else{
-       //   $error['image'] = '';
        }
      }
      
      if (empty($error)) {
          $image = date('YmdHis').$filename;
-         echo $image;
          move_uploaded_file($_FILES['image']['tmp_name'], '../member_picture/'.$image);
          $_SESSION['join'] = $_POST;
          $_SESSION['join']['image'] = $image;
-         // header('Location: check.php');
-         // exit();
-     }
-  
+         var_dump($_SESSION);
+         header('Location: check.php');
+         exit();
+     } 
  }
+
+if (isset($_REQUEST['action'])&&$_REQUEST['action']=='rewrite') {
+    $_POST = $_SESSION['join'];
+    $error['rewrite'] = true;
+}
  ?>
 
 <!DOCTYPE html>
