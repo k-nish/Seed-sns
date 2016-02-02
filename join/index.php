@@ -7,43 +7,45 @@
      if ($_POST['nick_name'] == '') {
          $error['nick_name'] = 'blank';
      }
-     elseif ($_POST['nick_name'] !='') {
-         $error['nick_name'] ='';
-     }
+     // elseif ($_POST['nick_name'] !='') {
+     //     $error['nick_name'] ='';
+     // }
      if ($_POST['email'] == '') {
          $error['email'] = 'blank';
      }
-     elseif ($_POST['email'] != '') {
-         $error['email'] = '';
-     }
+     // elseif ($_POST['email'] != '') {
+     //     $error['email'] = '';
+     // }
      if (strlen($_POST['password']) <3) {
          $error['password'] = 'length';
-     }else {
-         $error['password'] = '';
+     // }else {
+     //     $error['password'] = '';
      }
      if ($_POST['password'] == '') {
          $error['password'] = 'blank';
      }
-  // var_dump($_FILES['image']['name']);
-  if(isset($_FILES['image']['name'])&&!empty($_FILES['image']['name'])){
-     echo "ok";
+
+
      $filename = $_FILES['image']['name'];
      if (!empty($filename)) {
        $ext = substr($filename, -3);
-       var_dump($ext);
        if ($ext != 'jpg' && $ext != 'gif') {
          $error ['image']  = 'type';
+       // }else{
+       //   $error['image'] = '';
        }
      }
+     
      if (empty($error)) {
-         $image = date('YmdHis') . $_FILES['image']['name'];
-         move_uploaded_file($_FILES['image']['tmp_name'], '../member_picture/' . $image);
+         $image = date('YmdHis').$filename;
+         echo $image;
+         move_uploaded_file($_FILES['image']['tmp_name'], '../member_picture/'.$image);
          $_SESSION['join'] = $_POST;
          $_SESSION['join']['image'] = $image;
-         header('Location: check.php');
-         exit();
+         // header('Location: check.php');
+         // exit();
      }
- }
+  
  }
  ?>
 
@@ -101,7 +103,7 @@
     <div class="row">
       <div class="col-md-6 col-md-offset-3 content-margin-top">
         <legend>会員登録</legend>
-        <form method="post" action="index.php" class="form-horizontal" role="form" enctype='multipart/form-deta'>
+        <form method="post" action="" class="form-horizontal" role="form" enctype="multipart/form-data">
           <!-- ニックネーム -->
           <div class="form-group">
             <label class="col-sm-4 control-label">ニックネーム</label>
@@ -109,7 +111,7 @@
               <?php if (isset($_POST)&&!empty($_POST)){ ?>
                   <input type="text" name="nick_name" class="form-control" placeholder="例： Seed kun" 
                       value="<?php echo htmlspecialchars($_POST['nick_name'], ENT_QUOTES,'UTF-8'); ?>">
-                  <?php if ($error['nick_name'] == 'blank'){ ?>
+                  <?php if (isset($error['nick_name'])&&$error['nick_name'] == 'blank'){ ?>
                   <p class='error'>*ニックネームを入力してください</p>
                   <?php } ?>
               <?php }else {?>
@@ -125,7 +127,7 @@
               <?php if (isset($_POST)&&!empty($_POST)){ ?>
                   <input type="email" name="email" class="form-control" placeholder="例： seed@nex.com"
                       value="<?php echo htmlspecialchars($_POST['email'],ENT_QUOTES,'UTF-8'); ?>">
-                  <?php if ($error['email']=='blank') { ?>
+                  <?php if (isset($error['email'])&&$error['email']=='blank') { ?>
                   <p class="error">* メールアドレスを入力してください。</p>
                   <?php } ?>
               <?php }else{ ?>
@@ -141,9 +143,9 @@
               <?php if(isset($_POST)&&!empty($_POST)) {?>
                     <input type="password" name="password" class="form-control" placeholder="" 
                         value="<?php echo htmlspecialchars($_POST['password'],ENT_QUOTES,'UTF-8'); ?>">
-                  <?php if($error['password'] == 'blank') {?>
+                  <?php if(isset($error['password'])&&$error['password'] == 'blank') {?>
                       <p class='error'>*パスワードを入力してください。</p>
-                  <?php } elseif ($error['password'] == 'length') { ?>
+                  <?php } elseif (isset($error['password'])&&$error['password'] == 'length') { ?>
                       <p class='error'>*パスワードは4文字以上で入力してください。</p>
                   <?php } ?>
               <?php }else{ ?>
@@ -157,7 +159,7 @@
             <div class="col-sm-8">
               <input type="file" name="image" class="form-control">
               <?php if (isset($_FILES['image']['name'])&&!empty($_FILES['image']['name'])) {
-                  if ($error['image'] == 'type') { ?>
+                  if (isset($error['image'])&&$error['image'] == 'type') { ?>
                   <p class="error">*写真などは「.gif」または「.jpg」の画像を指定してください。</p>
               <?php }} ?>
               <?php if (isset($_POST)&&!empty($_POST)&&empty($_FILES['image'])) {
