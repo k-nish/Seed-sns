@@ -7,7 +7,6 @@ if (!isset($_SESSION['join'])) {
   exit();
 }
 if (isset($_SESSION['join'])&&!empty($_SESSION['join'])) {
-  echo "ok";
   $sql = sprintf('INSERT INTO `members` SET `nick_name`="%s", `email`="%s",`password`="%s",`picture_path`="%s",`created`="%s"',
     mysqli_real_escape_string($db,$_SESSION['join']['nick_name']),
     mysqli_real_escape_string($db,$_SESSION['join']['email']),
