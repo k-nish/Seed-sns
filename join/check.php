@@ -6,7 +6,7 @@ if (!isset($_SESSION['join'])) {
   header('Location: index.php');
   exit();
 }
-if (isset($_SESSION['join'])&&!empty($_SESSION['join'])) {
+if (!empty($_POST)) {
   $sql = sprintf('INSERT INTO `members` SET `nick_name`="%s", `email`="%s",`password`="%s",`picture_path`="%s",`created`="%s"',
     mysqli_real_escape_string($db,$_SESSION['join']['nick_name']),
     mysqli_real_escape_string($db,$_SESSION['join']['email']),
@@ -75,7 +75,7 @@ if (isset($_SESSION['join'])&&!empty($_SESSION['join'])) {
   <div class="container">
     <div class="row">
       <div class="col-md-4 col-md-offset-4 content-margin-top">
-        <form method="post" action="check.php" class="form-horizontal" role="form">
+        <form method="post" action="" class="form-horizontal" role="form">
           <input type="hidden" name="action" value="submit">
           <div class="well">ご登録内容をご確認ください。</div>
             <table class="table table-striped table-condensed">
@@ -96,14 +96,14 @@ if (isset($_SESSION['join'])&&!empty($_SESSION['join'])) {
                 <tr>
                   <td><div class="text-center">プロフィール画像</div></td>
                   <td><div class="text-center">
-                    <?php echo sprintf('<img src="../member_picture/%s" width="100" height="100">',htmlspecialchars($_SESSION['join']['image'],ENT_QUOTES,'UTF-8')) ?>
+                    <?php echo sprintf('<img src="../member_picture/%s" width="100" height="100">',htmlspecialchars($_SESSION['join']['picture_path'],ENT_QUOTES,'UTF-8')) ?>
                     </div></td>
                 </tr>
               </tbody>
             </table>
 
             <a href="index.php?action=rewrite">&laquo;&nbsp;書き直す</a> | 
-            <input type="button" class="btn btn-default" value="会員登録">
+            <input type="submit" class="btn btn-default" value="会員登録">
           </div>
         </form>
       </div>

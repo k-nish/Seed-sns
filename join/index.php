@@ -1,4 +1,5 @@
 <?php 
+ require('../dbconnect.php');
  session_start();
  $error = array();
 
@@ -20,9 +21,19 @@
      $filename = $_FILES['picture_path']['name'];
      if (!empty($filename)) {
        $ext = substr($filename, -3);
-       if ($ext != 'jpg' && $ext != 'gif') {
+       if ($ext != 'jpg' && $ext != 'gif' && $ext !='png') {
          $error ['image']  = 'type';
        }
+     }
+     
+     if (empty($error)) {
+         $sql = sprintf('SELECT COUNT(*) AS cnt FROM `members` WHERE `email` = "%s"',
+          mysqli_real_escape_string($db,$_POST['email']));
+          $reccord = mysqli_query($db,$sql) or die(mysqli_error($db));
+          $table = mysqli_fetch_assoc($reccord);
+          if ($table['cnt'] > 0) {
+            $error['email'] = 'duplicate';
+          }
      }
      
      if (empty($error)) {
@@ -30,7 +41,6 @@
          move_uploaded_file($_FILES['picture_path']['tmp_name'], '../member_picture/'.$image);
          $_SESSION['join'] = $_POST;
          $_SESSION['join']['picture_path'] = $image;
-         var_dump($_SESSION);
          header('Location: check.php');
          exit();
      } 
@@ -126,7 +136,10 @@ if (isset($_REQUEST['action'])&&$_REQUEST['action']=='rewrite') {
               <?php }else{ ?>
                   <input type="email" name="email" class="form-control" placeholder="例： seed@nex.com" 
                       value="">
-              <?php } ?>              
+              <?php } ?>
+              <?php if (isset($error['email'])&&$error['email'] =='duplicate') {?>
+                  <p class='error'>*指定されたメールアドレスはすでに登録されています。</p>
+              <?php } ?>
             </div>
           </div>
           <!-- パスワード -->
@@ -153,7 +166,7 @@ if (isset($_REQUEST['action'])&&$_REQUEST['action']=='rewrite') {
               <input type="file" name="picture_path" class="form-control">
               <?php if (isset($_FILES['picture_path']['name'])&&!empty($_FILES['picture_path']['name'])) {
                   if (isset($error['image'])&&$error['image'] == 'type') { ?>
-                  <p class="error">*写真などは「.gif」または「.jpg」の画像を指定してください。</p>
+                  <p class="error">*写真などは「.gif」、「.jpg」または「.png」の画像を指定してください。</p>
               <?php }} ?>
               <?php if (isset($_POST)&&!empty($_POST)&&empty($_FILES['image'])) {
                   if (!empty($error)) { ?>
