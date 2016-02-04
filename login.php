@@ -4,13 +4,13 @@
   session_start();
 
   if (isset($_COOKIE['email'])&&$_COOKIE['email'] != '') {
-    if (isset($_COOKIE['password'])&&$_COOKIE['password'] !='') {
+    if(isset($_COOKIE['password'])&&$_COOKIE['password'] != ''){
       $_POST['email'] = $_COOKIE['email'];
       $_POST['password'] = $_COOKIE['password'];
       $_POST['save'] = 'on';
     }
   }
-
+  
   $error = array();
   if (isset($_POST)&&!empty($_POST)) {
       if ($_POST['email'] !='' && $_POST['password'] != '') {
@@ -18,19 +18,21 @@
               mysqli_real_escape_string($db, $_POST['email']),
               mysqli_real_escape_string($db, sha1($_POST['password']))
               );
-          $record = mysqli_query($db,$sql) or die(mysql_error($db));
+          $record = mysqli_query($db,$sql) or die(mysql_error());
           if ($table = mysqli_fetch_assoc($record)) {
-              $_SESSION['id'] = $table['id'];
+              $_SESSION['member_id'] = $table['member_id'];
               $_SESSION['time'] = time();
               if ($_POST['save'] = 'on') {
-                  setcookie('email',$_POST['email'],time()+60*60*24*14);
-                  setcookie('email',$_POST['password'],time()+60*60*24*14); 
+                  setcookie('email',$_POST['email'],time() +60*60*24*14);
+                  setcookie('email',$_POST['password'],time() +60*60*24*14); 
               }
               header('Location: index.php');
               exit();
-          }else{
+          }
+          else{
               $error['login'] = 'failed';
           }
+          // header('Location: index.php');
       }else {
           $error['login'] = 'blank';
       }   
