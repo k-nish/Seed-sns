@@ -29,16 +29,44 @@ if (!empty($_POST)) {
   }
 }
 
+$page='';
+if(isset($_REQUEST['page'])){
+    $page = $_REQUEST['page'];
+}
+if ($page == '') {
+    $page == 1;
+}
+$page = max($page,1);
 
-$sql = 'SELECT m.nick_name,m.picture_path,t.* FROM `tweets` t,`members` m WHERE t.member_id = m.member_id ORDER BY t.created DESC';
+//最終ページ取得
+$sql = 'SELECT COUNT(*) AS cnt FROM `tweets`';
+$recordSet = mysqli_query($db,$sql);
+$table = mysqli_fetch_assoc($recordSet);
+$maxpage = ceil($table['cnt']/5);
+$page = min($page,$maxpage);
+
+$start = ($page-1)*5;
+$start = max(0,$start);
+
+$sql = sprintf('SELECT m.nick_name,m.picture_path,t.* FROM `tweets` t,`members` m WHERE t.member_id = m.member_id ORDER BY t.created DESC LIMIT %d,5',$start);
 $records = mysqli_query($db,$sql) or die(mysql_error());
 
 if (isset($_REQUEST['res'])) {
-    $sql = sprintf('SELECT m.`nick_name`,m.`picture_path`,t.* FROM `tweets`t,`members`m WHERE m.`member_id`=t.`member_id` AND t.`tweet_id`=%d ORDER BY t.created DESC',
+    $sql = sprintf('SELECT m.`nick_name`,m.`picture_path`,t.* FROM `tweets`t,`members`m WHERE m.`member_id`=t.`member_id` AND t.`tweet_id`=%d',
       mysqli_real_escape_string($db,$_REQUEST['res']));
-      $record = mysqli_query($db,$sql) or die(mysql_error());
-      $resp = mysqli_fetch_assoc($record);
-      $message = '@'.$resp['nick_name'].' '.$resp['tweet'];
+    $record = mysqli_query($db,$sql) or die(mysql_error());
+    $resp = mysqli_fetch_assoc($record);
+    $message = '>@'.$resp['nick_name'].' '.$resp['tweet'];
+}
+
+//htmlspecialchars()のfunctionを設置
+function h($value){
+    return htmlspecialchars($value,ENT_QUOTES,'UTF-8');
+}
+//URL表示用のfunctionを設置
+function makeLink($value){
+  // return mb_ereg_replace("(https?)(://[[:alnum:]¥+¥$¥;¥?¥.%,!#~*/:@&=_-]+)",'<a href="¥1¥2">¥1¥2</a>',$value);
+  return mb_ereg_replace('(https?://[-_.!~*\'()a-zA-Z0-9;/?:@&=+$,%#]+)','<a href="\1" target="_blank">\1</a>',$value);
 }
  ?>
 <!DOCTYPE html>
@@ -108,10 +136,18 @@ if (isset($_REQUEST['res'])) {
             </div>
           <ul class="paging">
             <input type="submit" class="btn btn-info" value="つぶやく">
+                <?php if ($page > 1){ ?>
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <li><a href="index.html" class="btn btn-default">前</a></li>
+                <li><a href="index.php?<?php print($page-1); ?>" class="btn btn-default">前</a></li>
+                <?php }else{ ?>
+                <li>前のページへ</li>
+                <?php } ?>
+                <?php if ($page < $maxpage) { ?>
                 &nbsp;&nbsp;|&nbsp;&nbsp;
-                <li><a href="index.html" class="btn btn-default">次</a></li>
+                <li><a href="index.php?<?php print($page+1); ?>" class="btn btn-default">次</a></li>
+                <?php }else{ ?>
+                <li>次のページへ</li>
+                <?php } ?>
           </ul>
         </form>
       </div>
@@ -121,15 +157,20 @@ if (isset($_REQUEST['res'])) {
         <div class="msg">
           <img src="member_picture/<?php echo htmlspecialchars($tweet['picture_path']);?>" width="48" height="48">
           <p>
-            <strong><Font size="4"><?php echo htmlspecialchars($tweet['tweet']); ?></strong> <span class="name"> <?php echo htmlspecialchars($tweet['nick_name']); ?> </span>
+            <strong><Font size="4"><!--<?php echo htmlspecialchars($tweet['tweet']); ?>--><?php echo makeLink(h($tweet['tweet'])); ?></strong> <span class="name"> (<?php echo htmlspecialchars($tweet['nick_name']); ?>)</span>
             [<a href="index.php?res=<?php echo htmlspecialchars($tweet['tweet_id'],ENT_QUOTES,'UTF-8'); ?>">Re</a>]
           </p>
           <p class="day">
-            <a href="view.html">
-              <?php echo htmlspecialchars($tweet['created']); ?>
+            <a href="view.php?id=<?php echo htmlspecialchars($tweet['tweet_id'],ENT_QUOTES,'UTF-8'); ?>">
+              <?php echo htmlspecialchars($tweet['created'],ENT_QUOTES,'UTF-8'); ?>
             </a>
+            <?php if ($tweet['reply_tweet_id']>0) {?>
+                <a href="view.php?id=<?php echo h($tweet['reply_tweet_id']); ?>">返信元のつぶやき</a>
+            <?php } ?>
             [<a href="#" style="color: #00994C;">編集</a>]
-            [<a href="#" style="color: #F33;">削除</a>]
+            <?php if($_SESSION['member_id']=$tweet['member_id']){ ?>
+            [<a href="delete.php?id=<?php echo h($tweet['tweet_id']); ?>" style="color: #F33;">削除</a>]
+            <?php } ?>
           </p>
         </div>
       </div>
