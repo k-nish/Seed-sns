@@ -2,6 +2,8 @@
 session_start();
 
 require('dbconnect.php');
+
+//ログイン確認、tweetを受け取る
 if (isset($_SESSION['member_id']) && $_SESSION['time'] + 3600 > time()) {
     $_SESSION['time'] = time();
     $sql = sprintf('SELECT * FROM `members` WHERE `member_id` =%d',
@@ -15,6 +17,8 @@ else{
     exit();  
 }
 
+
+//dbに投稿
 if (!empty($_POST)) {
   if($_POST['tweet'] != ''){
     $sql = sprintf('INSERT INTO `tweets` SET `tweet`="%s",`member_id`="%d",`reply_tweet_id`="%d",`created` = now()',
@@ -29,6 +33,7 @@ if (!empty($_POST)) {
   }
 }
 
+//現在のページを選択
 $page='';
 if(isset($_REQUEST['page'])){
     $page = $_REQUEST['page'];
@@ -42,15 +47,22 @@ $page = max($page,1);
 $sql = 'SELECT COUNT(*) AS cnt FROM `tweets`';
 $recordSet = mysqli_query($db,$sql);
 $table = mysqli_fetch_assoc($recordSet);
-$maxpage = ceil($table['cnt']/5);
+$maxpage = ceil($table['cnt'] / 5);
 $page = min($page,$maxpage);
 
 $start = ($page-1)*5;
 $start = max(0,$start);
 
+var_dump($page);
+var_dump($maxpage);
+var_dump($start);
+
+//これまでの投稿表示
 $sql = sprintf('SELECT m.nick_name,m.picture_path,t.* FROM `tweets` t,`members` m WHERE t.member_id = m.member_id ORDER BY t.created DESC LIMIT %d,5',$start);
 $records = mysqli_query($db,$sql) or die(mysql_error());
+var_dump($sql);
 
+//返信元のtweetを表示
 if (isset($_REQUEST['res'])) {
     $sql = sprintf('SELECT m.`nick_name`,m.`picture_path`,t.* FROM `tweets`t,`members`m WHERE m.`member_id`=t.`member_id` AND t.`tweet_id`=%d',
       mysqli_real_escape_string($db,$_REQUEST['res']));
@@ -138,13 +150,13 @@ function makeLink($value){
             <input type="submit" class="btn btn-info" value="つぶやく">
                 <?php if ($page > 1){ ?>
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <li><a href="index.php?<?php print($page-1); ?>" class="btn btn-default">前</a></li>
+                <li><a href="index.php?page=<?php print($page-1); ?>" class="btn btn-default">前</a></li>
                 <?php }else{ ?>
                 <li>前のページへ</li>
                 <?php } ?>
                 <?php if ($page < $maxpage) { ?>
                 &nbsp;&nbsp;|&nbsp;&nbsp;
-                <li><a href="index.php?<?php print($page+1); ?>" class="btn btn-default">次</a></li>
+                <li><a href="index.php?page=<?php echo ($page+1); ?>" class="btn btn-default">次</a></li>
                 <?php }else{ ?>
                 <li>次のページへ</li>
                 <?php } ?>
