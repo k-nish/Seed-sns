@@ -49,18 +49,14 @@ $recordSet = mysqli_query($db,$sql);
 $table = mysqli_fetch_assoc($recordSet);
 $maxpage = ceil($table['cnt'] / 5);
 $page = min($page,$maxpage);
+//以上で$pageの定義完了
 
 $start = ($page-1)*5;
 $start = max(0,$start);
 
-var_dump($page);
-var_dump($maxpage);
-var_dump($start);
-
 //これまでの投稿表示
 $sql = sprintf('SELECT m.nick_name,m.picture_path,t.* FROM `tweets` t,`members` m WHERE t.member_id = m.member_id ORDER BY t.created DESC LIMIT %d,5',$start);
 $records = mysqli_query($db,$sql) or die(mysql_error());
-var_dump($sql);
 
 //返信元のtweetを表示
 if (isset($_REQUEST['res'])) {
@@ -121,7 +117,7 @@ function makeLink($value){
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
               <ul class="nav navbar-nav navbar-right">
-                <li><a href="logout.html">ログアウト</a></li>
+                <li><a href="logout.php">ログアウト</a></li>
               </ul>
           </div>
           <!-- /.navbar-collapse -->
@@ -179,7 +175,7 @@ function makeLink($value){
             <?php if ($tweet['reply_tweet_id']>0) {?>
                 <a href="view.php?id=<?php echo h($tweet['reply_tweet_id']); ?>">返信元のつぶやき</a>
             <?php } ?>
-            [<a href="#" style="color: #00994C;">編集</a>]
+            [<a href="edit.php?id=<?php echo h($tweet['tweet_id']); ?>" style="color: #00994C;">編集</a>]
             <?php if($_SESSION['member_id']=$tweet['member_id']){ ?>
             [<a href="delete.php?id=<?php echo h($tweet['tweet_id']); ?>" style="color: #F33;">削除</a>]
             <?php } ?>
