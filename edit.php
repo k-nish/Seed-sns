@@ -91,7 +91,7 @@ if(isset($_POST)&&!empty($_POST)){
             <p class="day">
               <?php echo $tweet['created']; ?>
               <input type="submit" value="編集">
-              [<a href="#" style="color: #F33;">削除</a>]
+              [<a href="delete.php?id=<?php echo htmlspecialchars($tweet['tweet_id'],ENT_QUOTES,'UTF-8'); ?>" style="color: #F33;">削除</a>]
             </p>
           </form>
         </div>
