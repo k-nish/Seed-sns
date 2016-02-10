@@ -200,7 +200,7 @@ function makeLink($value){
             <div class="form-group">
               <label class="col-sm-4 control-label">検索!</label>
               <div class="col-sm-8">
-                <textarea name="find" cols="50" rows="5" class="form-control" placeholder="あいまい検索"></textarea>
+                <input name="find" cols="50" rows="5" class="form-control" placeholder="あいまい検索">
                   <!-- <input type='hidden' name="reply_tweet_id" value="<?php echo htmlspecialchars($_REQUEST['res'], ENT_QUOTES,'UTF-8'); ?>"/> -->
               </div>
             </div>
