@@ -8,7 +8,7 @@ if (isset($_SESSION['member_id']) && $_SESSION['time'] + 3600 > time()) {
     $_SESSION['time'] = time();
     $sql = sprintf('SELECT * FROM `members` WHERE `member_id` =%d',
        mysqli_real_escape_string($db,$_SESSION['member_id']));
-    $record = mysqli_query($db,$sql) or die(mysql_error());
+    $record = mysqli_query($db,$sql) or die(mysqli_error($db));
     $member = mysqli_fetch_assoc($record);
 }
 else{
@@ -24,13 +24,13 @@ if (!empty($_POST['tweet'])) {
           mysqli_real_escape_string($db,$_POST['tweet']),
           mysqli_real_escape_string($db,$member['member_id']),
           mysqli_real_escape_string($db,$_POST['reply_tweet_id']));
-    $record = mysqli_query($db,$sql) or die(mysql_error());
+    $record = mysqli_query($db,$sql) or die(mysqli_error($db));
     header('Location: index.php');
     exit();
   }
 }
 
-if (isset($_POST['find'])&&!empty($_POST['find'])) {
+if (isset($_GET['find'])&&!empty($_GET['find'])) {
     //ページング処理
     $pg='';
     if(isset($_REQUEST['pg'])){
@@ -42,11 +42,16 @@ if (isset($_POST['find'])&&!empty($_POST['find'])) {
     $pg = max($pg,1);
 
     //最終ページ取得
-    $sq = 'SELECT COUNT(*) AS cnt FROM `tweets` WHERE `tweet` LIKE "%'.$_POST['find'].'%"';
-    $recordset = mysqli_query($db,$sq);
+    // $sq = 'SELECT COUNT(*) AS cnt FROM `tweets` WHERE `tweet` LIKE "%'.$_POST['find'].'%"';
+    $sq = sprintf('SELECT COUNT(*) AS cnt FROM `tweets` WHERE `tweet` LIKE "%%%s%%"',
+           mysqli_real_escape_string($db,$_GET['find']));
+    $recordset = mysqli_query($db,$sq) or die(mysqli_error($db));
     $tables = mysqli_fetch_assoc($recordset);
     $maxpg = ceil($tables['cnt'] / 5);
     $pg = min($pg,$maxpg);
+    var_dump($maxpg);
+    var_dump($pg);
+    var_dump($tables['cnt']);
     //以上で$pageの定義完了
     
     $starts = ($pg-1)*5;
@@ -55,7 +60,7 @@ if (isset($_POST['find'])&&!empty($_POST['find'])) {
 
     //あいまい検索実行
     $sql = 'SELECT m.nick_name,m.picture_path,t.* FROM `tweets` t,`members` m WHERE t.member_id = m.member_id
-                    AND `tweet` LIKE "%'.$_POST['find'].'%" ORDER BY t.created DESC LIMIT '.$starts.',5';
+                    AND `tweet` LIKE "%'.$_GET['find'].'%" ORDER BY t.created DESC LIMIT '.$starts.',5';
           // mysqli_real_escape_string($db,$_POST['find']));
     $stmt = mysqli_query($db,$sql) or die(mysqli_error($db));
     //検索結果のページング
@@ -190,7 +195,7 @@ function makeLink($value){
         </form>
 
         <legend>検索ボックス！</legend>
-        <form method="post" action="" class="form-horizontal" role="form">
+        <form method="get" action="" class="form-horizontal" role="form">
             <!-- 検索 -->
             <div class="form-group">
               <label class="col-sm-4 control-label">検索!</label>
@@ -204,13 +209,13 @@ function makeLink($value){
                 <?php if (isset($pg)) { ?>
                 <?php if ($pg > 1){ ?>
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <li><a href="index.php?pg=<?php print($pg-1); ?>" class="btn btn-default">前</a></li>
+                <li><a href="index.php?pg=<?php print ($pg-1); ?>&find=<?php echo h($_GET['find']); ?>" class="btn btn-default">前</a></li>
                 <?php }else{ ?>
                 <li>前のページへ</li>
                 <?php } ?>
                 <?php if ($pg < $maxpg) { ?>
                 &nbsp;&nbsp;|&nbsp;&nbsp;
-                <li><a href="index.php?pg=<?php echo ($pg+1); ?>" class="btn btn-default">次</a></li>
+                <li><a href="index.php?pg=<?php echo ($pg+1); ?>&find=<?php echo h($_GET['find']); ?>" class="btn btn-default">次</a></li>
                 <?php }else{ ?>
                 <li>次のページへ</li>
                 <?php }} ?>
@@ -220,7 +225,7 @@ function makeLink($value){
 
 
 
-      <?php if (isset($_POST['find'])&&!empty($_POST['find'])) {
+      <?php if (isset($_GET['find'])&&!empty($_GET['find'])) {
                 while($twt = mysqli_fetch_assoc($stmt)): ?>
       <div class="col-md-8 content-margin-top">
         <div class="msg">
@@ -258,10 +263,11 @@ function makeLink($value){
             <?php if ($tweet['reply_tweet_id']>0) {?>
                 <a href="view.php?id=<?php echo h($tweet['reply_tweet_id']); ?>">返信元のつぶやき</a>
             <?php } ?>
+            <?php if($tweet['member_id'] == $_SESSION['member_id']){ ?>
             [<a href="edit.php?id=<?php echo h($tweet['tweet_id']); ?>" style="color: #00994C;">編集</a>]
             <?php if($_SESSION['member_id']==$tweet['member_id']){ ?>
             [<a href="delete.php?id=<?php echo h($tweet['tweet_id']); ?>" style="color: #F33;">削除</a>]
-            <?php } ?>
+            <?php }} ?>
           </p>
         </div>
       </div>

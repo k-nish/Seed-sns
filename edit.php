@@ -92,8 +92,10 @@ if(isset($_POST)&&!empty($_POST)){
             </p>
             <p class="day">
               <?php echo $tweet['created']; ?>
+              <?php if($tweet['member_id'] == $_SESSION['member_id']){ ?>
               <input type="submit" value="編集">
               [<a href="delete.php?id=<?php echo htmlspecialchars($tweet['tweet_id'],ENT_QUOTES,'UTF-8'); ?>" style="color: #F33;">削除</a>]
+              <?php } ?>
             </p>
           </form>
         </div>
