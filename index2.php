@@ -1,8 +1,8 @@
-<?php
+<?php 
 session_start();
 
 require('dbconnect.php');
-// var_dump($_SESSION);
+var_dump($_SESSION);
 //ログイン確認、tweetを受け取る
 if (isset($_SESSION['member_id']) && $_SESSION['time'] + 3600 > time()) {
     $_SESSION['time'] = time();
@@ -10,83 +10,55 @@ if (isset($_SESSION['member_id']) && $_SESSION['time'] + 3600 > time()) {
        mysqli_real_escape_string($db,$_SESSION['member_id']));
     $record = mysqli_query($db,$sql) or die(mysql_error());
     $member = mysqli_fetch_assoc($record);
+    // echo $member['nick_name'];
+    // var_dump($member);
 }
 else{
     header('Location:login.php');
-    exit();
+    exit();  
 }
 
 
 //dbに投稿
-if (!empty($_POST['tweet'])) {
+if (!empty($_POST)) {
   if($_POST['tweet'] != ''){
     $sql = sprintf('INSERT INTO `tweets` SET `tweet`="%s",`member_id`="%d",`reply_tweet_id`="%d",`created` = now()',
           mysqli_real_escape_string($db,$_POST['tweet']),
           mysqli_real_escape_string($db,$member['member_id']),
           mysqli_real_escape_string($db,$_POST['reply_tweet_id']));
     $record = mysqli_query($db,$sql) or die(mysql_error());
+    // $twe = mysql_fetch_assoc($record);
+    // var_dump($twe);    
     header('Location: index.php');
     exit();
   }
 }
 
-if (isset($_POST['find'])&&!empty($_POST['find'])) {
-    //ページング処理
-    $pg='';
-    if(isset($_REQUEST['pg'])){
-        $pg = $_REQUEST['pg'];
-    }
-    if ($pg == '') {
-        $pg == 1;
-    }
-    $pg = max($pg,1);
-
-    //最終ページ取得
-    $sq = 'SELECT COUNT(*) AS cnt FROM `tweets` WHERE `tweet` LIKE "%'.$_POST['find'].'%"';
-    $recordset = mysqli_query($db,$sq);
-    $tables = mysqli_fetch_assoc($recordset);
-    $maxpg = ceil($tables['cnt'] / 5);
-    $pg = min($pg,$maxpg);
-    //以上で$pageの定義完了
-    
-    $starts = ($pg-1)*5;
-    $starts = max(0,$starts);
-    var_dump($maxpg);
-
-    //あいまい検索実行
-    $sql = 'SELECT m.nick_name,m.picture_path,t.* FROM `tweets` t,`members` m WHERE t.member_id = m.member_id
-                    AND `tweet` LIKE "%'.$_POST['find'].'%" ORDER BY t.created DESC LIMIT '.$starts.',5';
-          // mysqli_real_escape_string($db,$_POST['find']));
-    $stmt = mysqli_query($db,$sql) or die(mysqli_error($db));
-    //検索結果のページング
-    
-
-}else{
-    //現在のページを選択
-    $page='';
-    if(isset($_REQUEST['page'])){
-        $page = $_REQUEST['page'];
-    }
-    if ($page == '') {
-        $page == 1;
-    }
-    $page = max($page,1);
-
-    //最終ページ取得
-    $sql = 'SELECT COUNT(*) AS cnt FROM `tweets`';
-    $recordSet = mysqli_query($db,$sql);
-    $table = mysqli_fetch_assoc($recordSet);
-    $maxpage = ceil($table['cnt'] / 5);
-    $page = min($page,$maxpage);
-    //以上で$pageの定義完了
-    
-    $start = ($page-1)*5;
-    $start = max(0,$start);
-    
-    //これまでの投稿表示
-    $sql = sprintf('SELECT m.nick_name,m.picture_path,t.* FROM `tweets` t,`members` m WHERE t.member_id = m.member_id ORDER BY t.created DESC LIMIT %d,5',$start);
-    $records = mysqli_query($db,$sql) or die(mysql_error());
+//現在のページを選択
+$page='';
+if(isset($_REQUEST['page'])){
+    $page = $_REQUEST['page'];
 }
+if ($page == '') {
+    $page == 1;
+}
+$page = max($page,1);
+
+//最終ページ取得
+$sql = 'SELECT COUNT(*) AS cnt FROM `tweets`';
+$recordSet = mysqli_query($db,$sql);
+$table = mysqli_fetch_assoc($recordSet);
+$maxpage = ceil($table['cnt'] / 5);
+$page = min($page,$maxpage);
+//以上で$pageの定義完了
+
+$start = ($page-1)*5;
+$start = max(0,$start);
+
+//これまでの投稿表示
+$sql = sprintf('SELECT m.nick_name,m.picture_path,t.* FROM `tweets` t,`members` m WHERE t.member_id = m.member_id ORDER BY t.created DESC LIMIT %d,5',$start);
+$records = mysqli_query($db,$sql) or die(mysql_error());
+
 //返信元のtweetを表示
 if (isset($_REQUEST['res'])) {
     $sql = sprintf('SELECT m.`nick_name`,m.`picture_path`,t.* FROM `tweets`t,`members`m WHERE m.`member_id`=t.`member_id` AND t.`tweet_id`=%d',
@@ -157,23 +129,22 @@ function makeLink($value){
   <div class="container">
     <div class="row">
       <div class="col-md-4 content-margin-top">
-        <legend>ようこそ<?php echo h($member['nick_name']);?>さん！</legend>
+        <legend>ようこそ<?php echo htmlspecialchars($member['nick_name'],ENT_QUOTES,'UTF-8');?>さん！</legend>
         <form method="post" action="" class="form-horizontal" role="form">
             <!-- つぶやき -->
             <div class="form-group">
               <label class="col-sm-4 control-label">つぶやき</label>
               <div class="col-sm-8">
                 <?php if (isset($_REQUEST['res'])) { ?>
-                <textarea name="tweet" cols="50" rows="5" class="form-control"><?php echo h($message);?></textarea>
+                <textarea name="tweet" cols="50" rows="5" class="form-control"><?php echo htmlspecialchars($message,ENT_QUOTES,'UTF-8');?></textarea>
                 <?php }else{ ?>
                 <textarea name="tweet" cols="50" rows="5" class="form-control" placeholder="例：Hello World!"></textarea>
                 <?php } ?>
-                  <input type='hidden' name="reply_tweet_id" value="<?php echo h($_REQUEST['res']); ?>"/>
+                  <input type='hidden' name="reply_tweet_id" value="<?php echo htmlspecialchars($_REQUEST['res'], ENT_QUOTES,'UTF-8'); ?>"/>
               </div>
             </div>
           <ul class="paging">
             <input type="submit" class="btn btn-info" value="つぶやく">
-                <?php if (isset($page)) { ?>
                 <?php if ($page > 1){ ?>
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 <li><a href="index.php?page=<?php print($page-1); ?>" class="btn btn-default">前</a></li>
@@ -185,75 +156,22 @@ function makeLink($value){
                 <li><a href="index.php?page=<?php echo ($page+1); ?>" class="btn btn-default">次</a></li>
                 <?php }else{ ?>
                 <li>次のページへ</li>
-                <?php }} ?>
-          </ul>
-        </form>
-
-        <legend>検索ボックス！</legend>
-        <form method="post" action="" class="form-horizontal" role="form">
-            <!-- 検索 -->
-            <div class="form-group">
-              <label class="col-sm-4 control-label">検索!</label>
-              <div class="col-sm-8">
-                <textarea name="find" cols="50" rows="5" class="form-control" placeholder="あいまい検索"></textarea>
-                  <!-- <input type='hidden' name="reply_tweet_id" value="<?php echo htmlspecialchars($_REQUEST['res'], ENT_QUOTES,'UTF-8'); ?>"/> -->
-              </div>
-            </div>
-        <ul class="paging">
-            <input type="submit" class="btn btn-info" value="検索する">
-                <?php if (isset($pg)) { ?>
-                <?php if ($pg > 1){ ?>
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                <li><a href="index.php?pg=<?php print($pg-1); ?>" class="btn btn-default">前</a></li>
-                <?php }else{ ?>
-                <li>前のページへ</li>
                 <?php } ?>
-                <?php if ($pg < $maxpg) { ?>
-                &nbsp;&nbsp;|&nbsp;&nbsp;
-                <li><a href="index.php?pg=<?php echo ($pg+1); ?>" class="btn btn-default">次</a></li>
-                <?php }else{ ?>
-                <li>次のページへ</li>
-                <?php }} ?>
           </ul>
         </form>
       </div>
-
-
-
-      <?php if (isset($_POST['find'])&&!empty($_POST['find'])) {
-                while($twt = mysqli_fetch_assoc($stmt)): ?>
+      
+      <?php while($tweet = mysqli_fetch_assoc($records)): ?>
       <div class="col-md-8 content-margin-top">
         <div class="msg">
-          <img src="member_picture/<?php echo h($twt['picture_path']);?>" width="48" height="48">
+          <img src="member_picture/<?php echo htmlspecialchars($tweet['picture_path']);?>" width="48" height="48">
           <p>
-            <strong><Font size="4"><?php echo makeLink(h($twt['tweet'])); ?></strong> <span class="name"> (<?php echo h($twt['nick_name']); ?>)</span>
-            [<a href="index.php?res=<?php echo h($tweet['tweet_id']); ?>">Re</a>]
+            <strong><Font size="4"><!--<?php echo htmlspecialchars($tweet['tweet']); ?>--><?php echo makeLink(h($tweet['tweet'])); ?></strong> <span class="name"> (<?php echo htmlspecialchars($tweet['nick_name']); ?>)</span>
+            [<a href="index.php?res=<?php echo htmlspecialchars($tweet['tweet_id'],ENT_QUOTES,'UTF-8'); ?>">Re</a>]
           </p>
           <p class="day">
-            <a href="view.php?id=<?php echo h($twt['tweet_id']); ?>">
-              <?php echo h($twt['created']); ?>
-            </a>
-            <?php if ($twt['reply_tweet_id']>0) {?>
-                <a href="view.php?id=<?php echo h($twt['reply_tweet_id']); ?>">返信元のつぶやき</a>
-            <?php } ?>
-            [<a href="edit.php?id=<?php echo h($twt['tweet_id']); ?>" style="color: #00994C;">編集</a>]
-            <?php if($_SESSION['member_id']==$twt['member_id']){ ?>
-            [<a href="delete.php?id=<?php echo h($twt['tweet_id']); ?>" style="color: #F33;">削除</a>]
-            <?php } ?>
-          </p>
-        </div>
-      </div>
-      <?php endwhile; }else{ while($tweet = mysqli_fetch_assoc($records)): ?>
-      <div class="col-md-8 content-margin-top">
-        <div class="msg">
-          <img src="member_picture/<?php echo h($tweet['picture_path']);?>" width="48" height="48">
-          <p>
-            <strong><Font size="4"><?php echo makeLink(h($tweet['tweet'])); ?></strong> <span class="name"> (<?php echo h($tweet['nick_name']); ?>)</span>
-            [<a href="index.php?res=<?php echo h($tweet['tweet_id'],ENT_QUOTES,'UTF-8'); ?>">Re</a>]
-          </p>
-          <p class="day">
-            <a href="view.php?id=<?php echo h($tweet['tweet_id']); ?>">
-              <?php echo h($tweet['created']); ?>
+            <a href="view.php?id=<?php echo htmlspecialchars($tweet['tweet_id'],ENT_QUOTES,'UTF-8'); ?>">
+              <?php echo htmlspecialchars($tweet['created'],ENT_QUOTES,'UTF-8'); ?>
             </a>
             <?php if ($tweet['reply_tweet_id']>0) {?>
                 <a href="view.php?id=<?php echo h($tweet['reply_tweet_id']); ?>">返信元のつぶやき</a>
@@ -265,7 +183,7 @@ function makeLink($value){
           </p>
         </div>
       </div>
-      <?php endwhile; }?>
+    <?php endwhile; ?>
     </div>
   </div>
 

@@ -4,11 +4,11 @@ require('dbconnect.php');
 session_start();
 
 //編集前のデータを表示
-if(isset($_SESSION['member_id'])){
+if(isset($_SESSION['member_id'])&&$_SESSION['time'] +3600 >time()){
     if (empty($_GET['id'])) {
         header('Location: index.php');
         exit();
-    }else{
+    }else{ 
     $sql = sprintf('SELECT m.nick_name,m.picture_path,t.* FROM `members`m,`tweets` t WHERE m.`member_id`=t.`member_id` AND t.tweet_id="%d" ORDER BY t.created DESC',
         mysqli_real_escape_string($db,$_GET['id']));
     $record = mysqli_query($db,$sql) or die(mysql_error());
@@ -17,6 +17,8 @@ if(isset($_SESSION['member_id'])){
             $tweet = '';
         }
     }
+}else{
+    header('Location: index.php');
 }
 //UPDATE実行
 if(isset($_POST)&&!empty($_POST)){
