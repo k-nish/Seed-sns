@@ -53,7 +53,7 @@ if (isset($_GET['find'])&&!empty($_GET['find'])) {
     var_dump($pg);
     var_dump($tables['cnt']);
     //以上で$pageの定義完了
-    
+
     $starts = ($pg-1)*5;
     $starts = max(0,$starts);
     var_dump($maxpg);
@@ -64,7 +64,7 @@ if (isset($_GET['find'])&&!empty($_GET['find'])) {
           // mysqli_real_escape_string($db,$_POST['find']));
     $stmt = mysqli_query($db,$sql) or die(mysqli_error($db));
     //検索結果のページング
-    
+
 
 }else{
     //現在のページを選択
@@ -84,10 +84,9 @@ if (isset($_GET['find'])&&!empty($_GET['find'])) {
     $maxpage = ceil($table['cnt'] / 5);
     $page = min($page,$maxpage);
     //以上で$pageの定義完了
-    
+
     $start = ($page-1)*5;
     $start = max(0,$start);
-    
     //これまでの投稿表示
     $sql = sprintf('SELECT m.nick_name,m.picture_path,t.* FROM `tweets` t,`members` m WHERE t.member_id = m.member_id ORDER BY t.created DESC LIMIT %d,5',$start);
     $records = mysqli_query($db,$sql) or die(mysql_error());
