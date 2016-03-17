@@ -1,4 +1,4 @@
-<?php 
+<?php
   require('dbconnect.php');
 
   session_start();
@@ -10,7 +10,7 @@
       $_POST['save'] = 'on';
     }
   }
-  
+
   $error = array();
   if (isset($_POST)&&!empty($_POST)) {
       if ($_POST['email'] !='' && $_POST['password'] != '') {
@@ -24,7 +24,7 @@
               $_SESSION['time'] = time();
               if ($_POST['save'] = 'on') {
                   setcookie('email',$_POST['email'],time() +60*60*24*14);
-                  setcookie('password',$_POST['password'],time() +60*60*24*14); 
+                  setcookie('password',$_POST['password'],time() +60*60*24*14);
               }
               header('Location: index.php');
               exit();
@@ -36,7 +36,7 @@
           // header('Location: index.php');
       }else {
           $error['login'] = 'blank';
-      }   
+      }
   }
 ?>
 <!DOCTYPE html>
@@ -106,7 +106,7 @@
                         <p class="error">*メールアドレスとパスワードをご記入ください。</p>
               <?php } ?>
               <?php if (isset($error['login']) && $error['login'] == 'failed') { ?>
-                        <p class="error">*ログインに失敗しました。正しくご記入ください。</p>   
+                        <p class="error">*ログインに失敗しました。正しくご記入ください。</p>
               <?php } ?>
             </div>
           </div>
